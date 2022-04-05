@@ -104,9 +104,10 @@ double * feature_extractor(string file){
 
 int main(){
     int epochs = 100;
-    Perceptron classifier(0.01);
+    double acc;
+    Perceptron classifier(0.0001);
     for(int epoch = 0; epoch < epochs,classifier.num_err>0; epoch++){
-        ifstream train_dataset("train.txt", std::ios::in);
+        ifstream train_dataset("train_reduced.txt", std::ios::in);
         ifstream validation_dataset("val.txt", std::ios::in);
         ifstream test_dataset("test.txt",std::ios::in);
         if (!train_dataset.is_open()) {
@@ -137,31 +138,38 @@ int main(){
             double *x_val;
             double *y_val;
             int predict;
+            int err = 0;
             while (validation_dataset >> name >> score) {
-                cout << name << " " << score << "\n";
+                // cout << name << " " << score << "\n";
                 x_val = feature_extractor(name);
                 y_val = one_hot(score);
                 predict = classifier.predictionclass(x_val,y_val);
-                cout << name << "is label #" <<  predict << endl;
+                // cout << name << "is label #" <<  predict << endl;
+                if (predict != score){
+                    err = err +1;
+                }
+                count ++;
+            }
+            acc = (1-err/450.0)*100;
+            cout << "Validation Accuracy is " << acc << "%" << endl;
+
+            //Test Stage
+            count = 0;
+            double *x_test;
+            double *y_test;
+            err = 0;
+            while (test_dataset >> name >> score) {
+                x_test = feature_extractor(name);
+                y_test = one_hot(score);
+                predict = classifier.predictionclass(x_test,y_test);
+               if (predict != score){
+                    err = err +1;
+               }
                 count ++;
             
             }
-
-            //Test Stage
-            // count = 0;
-            // double *x_test;
-            // double *y_test;
-            // int predict;
-            // while (test_dataset >> name >> score) {
-            //     cout << name << " " << score << "\n";
-            //     x_test = feature_extractor(name);
-            //     y_test = one_hot(score);
-            //     predict = classifier.predictionclass(x_test,y_test);
-            //     cout << name << "is label #" <<  predict << endl;
-            //     count ++;
-            
-            // }
-            
+            acc = (1-err/450.0)*100;
+            cout << "Test Accuracy is " << acc << "%" << endl;
             train_dataset.close();
             validation_dataset.close();
             test_dataset.close();
@@ -170,7 +178,6 @@ int main(){
         validation_dataset.close();
         test_dataset.close();
     }
-    
     
 
     return 0;
